@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import wavfile
+import librosa
 from scipy.signal import stft
 
 def freq_to_midi(f):
@@ -8,13 +8,11 @@ def freq_to_midi(f):
 
 def extract_chromagram(file_path, plot=False):
     # Load audio
-    sr, y = wavfile.read(file_path)
-    if y.ndim > 1:
-        y = y.mean(axis=1)
+    y, sr = librosa.load(file_path, sr=None, mono=True)
 
     # STFT parameters
     window_size = 10000
-    hop_length = 5000
+    hop_length = 10000
     window = 'blackman'
     noverlap = window_size - hop_length
 
@@ -46,13 +44,13 @@ def extract_chromagram(file_path, plot=False):
         chromagram[chroma_bin, :] += pitch_energies[i, :]
 
     # Normalize
-    chromagram /= np.max(chromagram, axis=0, keepdims=True) + 1e-6
+    chromagram /= np.max(chromagram) + 1e-6
 
     # Optional plotting
     if plot:
         time_axis = np.linspace(0, len(y) / sr, num=len(y))
 
-        fig, axs = plt.subplots(5, 1, figsize=(12, 18))
+        fig, axs = plt.subplots(4, 1, figsize=(12, 18))
         axs[0].plot(time_axis, y)
         axs[0].set_title('a. Signal Amplitude vs Time')
         axs[0].set_xlabel('Time (s)')
@@ -65,35 +63,28 @@ def extract_chromagram(file_path, plot=False):
         axs[1].set_xlabel('Time (s)')
         fig.colorbar(img1, ax=axs[1])
 
-        log_f = np.log10(valid_freqs)
-        img2 = axs[2].imshow(20 * np.log10(valid_magnitude + 1e-6), origin='lower', aspect='auto',
-                             extent=[t[0], t[-1], log_f[0], log_f[-1]], cmap='magma')
-        axs[2].set_title('b2. STFT Spectrogram (Log Frequency)')
-        axs[2].set_ylabel('log10(Frequency) (Hz)')
-        axs[2].set_xlabel('Time (s)')
-        fig.colorbar(img2, ax=axs[2])
 
-        img3 = axs[3].imshow(pitch_energies, origin='lower', aspect='auto',
+        img3 = axs[2].imshow(pitch_energies, origin='lower', aspect='auto',
                              extent=[t[0], t[-1], min_midi, max_midi], cmap='viridis')
-        axs[3].set_title('c. Pitch Energies (per MIDI note)')
-        axs[3].set_ylabel('MIDI Note')
-        axs[3].set_xlabel('Time (s)')
-        fig.colorbar(img3, ax=axs[3])
+        axs[2].set_title('c. Pitch Energies (per MIDI note)')
+        axs[2].set_ylabel('MIDI Note')
+        axs[2].set_xlabel('Time (s)')
+        fig.colorbar(img3, ax=axs[2])
 
-        img4 = axs[4].imshow(chromagram, origin='lower', aspect='auto',
+        img4 = axs[3].imshow(chromagram, origin='lower', aspect='auto',
                              extent=[t[0], t[-1], 0, 12])
-        axs[4].set_yticks(np.arange(12))
-        axs[4].set_yticklabels(['C', 'C#', 'D', 'D#', 'E', 'F',
+        axs[3].set_yticks(np.arange(12))
+        axs[3].set_yticklabels(['C', 'C#', 'D', 'D#', 'E', 'F',
                                 'F#', 'G', 'G#', 'A', 'A#', 'B'])
-        axs[4].set_title('d. Chromagram')
-        axs[4].set_xlabel('Time (s)')
-        axs[4].set_ylabel('Pitch Class')
-        fig.colorbar(img4, ax=axs[4])
+        axs[3].set_title('d. Chromagram')
+        axs[3].set_xlabel('Time (s)')
+        axs[3].set_ylabel('Pitch Class')
+        fig.colorbar(img4, ax=axs[3])
 
         plt.tight_layout()
         plt.show()
 
-    return chromagram
+    return chromagram, t
 
 
 
