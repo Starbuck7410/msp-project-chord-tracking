@@ -1,20 +1,22 @@
 #!/usr/bin/python
 from itertools import combinations
-from chroma import extract_chromagram
-from ungabunga import *
-from viterbi_a import *
-
-
-chroma, t = extract_chromagram('vit2.wav', plot = False)
-
-threshold = [0.1, 0.7] # Low threshold and high threshold
+from chromagram import extract_chromagram
+from pattern_matching import *
+from viterbi import *
+from note_detector import *
 
 
 
-detections = detect_note_events(chroma, t, threshold[0])
+chroma, t = extract_chromagram('vit2.wav', plot = True)
 
-for detection in detections:
+
+
+soft_detections = soft_detect_note_events(chroma, t)
+
+for detection in soft_detections:
     print(detection)
+
+detections = detect_note_events(chroma, t)
 
 song = notes_to_event_matrix(detections)
 
@@ -23,20 +25,28 @@ song = filter_events(song)
 for line in song:
     print(line)
 
+soft_song = soft_notes_to_event_matrix(soft_detections)
 
+soft_song = filter_events(soft_song)
+
+for line in soft_song:
+    print(line)
+
+
+print(viterbi(soft_song, test = False))
 print(viterbi(song, test = False))
 
-print("STD")
+# print("STD")
 
-chords = group_close_detections(detect_chords_unga_bunga(detections))
-
-
-for chord in chords:
-    print(chord)
+# chords = group_close_detections(detect_chords_unga_bunga(detections))
 
 
+# for chord in chords:
+#     print(chord)
 
-# song = [
+
+
+# soft_song = [
 # #    C  C# D  D# E  F  F# G  G# A  A# B
 #     [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],  # D# + A
 #     [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],  # D# + F# + A  (F#m7-ish)

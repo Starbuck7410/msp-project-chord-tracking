@@ -1,40 +1,5 @@
 import numpy as np
 
-
-
-def filter_events(events, max_notes=5):
-    return [row for row in events if (sum(row) <= max_notes and sum(row) >= 2)]
-
-def notes_to_event_matrix(detections, step=0.01):
-    if not detections:
-        return []
-
-
-    # Determine time range
-    start_time = min(note[0] for note in detections)
-    end_time = max(note[1] for note in detections)
-    num_steps = int(np.ceil((end_time - start_time) / step))
-
-    # Generate full matrix
-    full_matrix = [[0] * 12 for _ in range(num_steps)]
-    for onset, offset, pitch in detections:
-        start_idx = int((onset - start_time) / step)
-        end_idx = int((offset - start_time) / step)
-        for i in range(start_idx, end_idx + 1):
-            if 0 <= i < num_steps:
-                full_matrix[i][pitch] = 1
-
-    # Remove consecutive duplicates
-    event_matrix = []
-    prev_row = None
-    for row in full_matrix:
-        if row != prev_row:
-            event_matrix.append(row)
-            prev_row = row
-
-    return event_matrix
-
-
 def get_note_vector(note, alpha):
     C = [1+alpha+alpha**3+alpha**7, 0, 0, 0, alpha**4, 0, 0, alpha**2+alpha**7, 0, 0, alpha**6, 0]
     if note > 11:
@@ -52,7 +17,6 @@ def get_minor_chord(note, alpha):
     b = get_note_vector(note + 3, alpha)
     c = get_note_vector(note + 7, alpha)
     return [x + y + z for x, y, z in zip(a, b, c)]
-
 
 def get_emission_coeff(chord, detection, alpha = 0.5):
     chord_vec = []
