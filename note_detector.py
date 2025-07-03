@@ -1,6 +1,9 @@
 import numpy as np
+from collections import defaultdict
 
 def detect_note_events(chromagram, t, threshold=0.5):
+
+
     detections = []
     active_notes = [None] * 12  # Stores on-times, or None if inactive
 
@@ -61,11 +64,6 @@ def soft_detect_note_events(chromagram, t, upper_threshold=0.5, lower_threshold=
     return detections
 
 def group_close_detections(detections, merge_gap=0.1):
-    """
-    Merge note events that are close in time (within merge_gap seconds)
-    and have the same pitch class.
-    """
-    from collections import defaultdict
 
     # Group detections by pitch class
     grouped = defaultdict(list)
@@ -97,8 +95,8 @@ def group_close_detections(detections, merge_gap=0.1):
 
 
 
-def filter_events(events, max_notes=5):
-    return [row for row in events if (sum(row) <= max_notes and sum(row) >= 2)]
+def filter_events(events, max_notes=5, min_notes = 2):
+    return [row for row in events if (sum(row) <= max_notes and sum(row) >= min_notes)]
 
 def notes_to_event_matrix(detections, step=0.1):
     if not detections:
