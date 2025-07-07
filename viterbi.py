@@ -27,9 +27,7 @@ def get_emission_coeff(chord, detection, alpha = 0.5):
     return sum(a * b for a, b in zip(chord_vec, detection))
 
 
-def get_transition_matrix(test=False):
-    if test:
-        return [[1/24]*24 for _ in range(24)]
+def get_transition_matrix():
     # Chords are numbered 0–23:
     #   0 - 11: Major chords (C to B)
     #  12 - 23: Minor chords (c to b)
@@ -71,7 +69,11 @@ def get_initial_prob_array():
 
 def viterbi(detection_matrix, test = False):
     initial_prob_array = get_initial_prob_array()
-    transition_matrix = get_transition_matrix(test)
+    if not test:
+        transition_matrix = get_transition_matrix()
+    else:
+        transition_matrix = [[1/24]*24 for _ in range(24)]
+        
     n = len(transition_matrix[0])
     m = len(detection_matrix)
 

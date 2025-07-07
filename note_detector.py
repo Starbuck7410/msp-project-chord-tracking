@@ -1,5 +1,5 @@
 import numpy as np
-from collections import defaultdict
+
 
 def detect_note_events(chromagram, t, threshold=0.5):
 
@@ -62,36 +62,6 @@ def soft_detect_note_events(chromagram, t, upper_threshold=0.5, lower_threshold=
             detections.append((on_time, t[-1], pitch_class, activation_certainty[pitch_class]))
 
     return detections
-
-def group_close_detections(detections, merge_gap=0.1):
-
-    # Group detections by pitch class
-    grouped = defaultdict(list)
-    for start, end, pitch in detections:
-        grouped[pitch].append((start, end))
-
-    merged_detections = []
-
-    for pitch, events in grouped.items():
-        # Sort by start time
-        events.sort()
-        current_start, current_end = events[0]
-
-        for start, end in events[1:]:
-            if start - current_end <= merge_gap:
-                # Extend current event
-                current_end = max(current_end, end)
-            else:
-                # Finalize current event
-                merged_detections.append((current_start, current_end, pitch))
-                current_start, current_end = start, end
-
-        # Final event
-        merged_detections.append((current_start, current_end, pitch))
-
-    # Sort merged results by start time
-    merged_detections.sort()
-    return merged_detections
 
 
 

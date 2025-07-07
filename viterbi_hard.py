@@ -5,6 +5,7 @@ from chromagram import extract_chromagram
 from pattern_matching import *
 from viterbi import *
 from note_detector import *
+from chord_names import get_chord_names
 
 chroma, t = extract_chromagram(sys.argv[1], plot = False)
 
@@ -14,4 +15,4 @@ song = notes_to_event_matrix(detections)
 
 song = filter_events(song)
 
-print(viterbi(song))
+print(get_chord_names(viterbi(song)))
